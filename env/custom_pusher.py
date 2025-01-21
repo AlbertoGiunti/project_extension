@@ -21,11 +21,12 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
 
         self.render_mode = render_mode
         self.frame_skip = 5
+        self.objects = ["object_red", "object_blue", "object_green"]
 
     def step(self, a):
         # Calcolo delle distanze e ricompense per ogni oggetto
         rewards = []
-        for obj, goal in [("object", "goal"), ("object_blue", "goal_blue"), ("object_green", "goal_green")]:
+        for obj, goal in [("object_red", "goal_red"), ("object_blue", "goal_blue"), ("object_green", "goal_green")]:
             vec_1 = self.sim.data.get_body_xpos(obj) - self.sim.data.get_body_xpos("tips_arm")
             vec_2 = self.sim.data.get_body_xpos(obj) - self.sim.data.get_body_xpos(goal)
 
@@ -46,10 +47,10 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
     def reset(self):
 
         # Define initial positions for the objects and goal
-        object_pos = np.array([0.0, -0.1])
+        object_red_pos = np.array([0.0, -0.1])
         object_blue_pos = np.array([0.35, -0.05])
         object_green_pos = np.array([0.55, -0.05])
-        goal_pos = np.array([0.6, -0.2])
+        goal_red_pos = np.array([0.6, -0.2])
         goal_blue_pos = np.array([0.0, 0.3])
         goal_green_pos = np.array([-0.6, -0.2])
 
@@ -63,14 +64,14 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         goal_green_pos += np.random.uniform(-0.1, 0.1, size=2)
         '''
         # Set joint positions in simulation
-        self.sim.data.set_joint_qpos("obj_slidex", object_pos[0])
-        self.sim.data.set_joint_qpos("obj_slidey", object_pos[1])
+        self.sim.data.set_joint_qpos("obj_red_slidex", object_red_pos[0])
+        self.sim.data.set_joint_qpos("obj__red_slidey", object_red_pos[1])
         self.sim.data.set_joint_qpos("obj_blue_slidex", object_blue_pos[0])
         self.sim.data.set_joint_qpos("obj_blue_slidey", object_blue_pos[1])
         self.sim.data.set_joint_qpos("obj_green_slidex", object_green_pos[0])
         self.sim.data.set_joint_qpos("obj_green_slidey", object_green_pos[1])
-        self.sim.data.set_joint_qpos("goal_slidex", goal_pos[0])
-        self.sim.data.set_joint_qpos("goal_slidey", goal_pos[1])
+        self.sim.data.set_joint_qpos("goal_red_slidex", goal_red_pos[0])
+        self.sim.data.set_joint_qpos("goal_red_slidey", goal_red_pos[1])
         self.sim.data.set_joint_qpos("goal_blue_slidey", goal_blue_pos[0])
         self.sim.data.set_joint_qpos("goal_blue_slidey", goal_blue_pos[1])
         self.sim.data.set_joint_qpos("goal_green_slidex", goal_green_pos[0])
