@@ -44,14 +44,16 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         return ob, total_reward, False, {"reward_ctrl": reward_ctrl}
 
     def reset(self):
+
         # Define initial positions for the objects and goal
-        object_pos = np.array([0.45, -0.05])
+        object_pos = np.array([0.0, -0.1])
         object_blue_pos = np.array([0.35, -0.05])
         object_green_pos = np.array([0.55, -0.05])
-        goal_pos = np.array([0.5, 0.0])
-        goal_blue_pos = np.array([0.1, 0.3])
-        goal_green_pos = np.array([0.7, 0.2])
+        goal_pos = np.array([0.6, -0.2])
+        goal_blue_pos = np.array([0.0, 0.3])
+        goal_green_pos = np.array([-0.6, -0.2])
 
+        '''
         # Optionally add randomness to positions
         object_pos += np.random.uniform(-0.05, 0.05, size=2)
         object_blue_pos += np.random.uniform(-0.05, 0.05, size=2)
@@ -59,7 +61,7 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         goal_pos += np.random.uniform(-0.1, 0.1, size=2)
         goal_blue_pos += np.random.uniform(-0.1, 0.1, size=2)
         goal_green_pos += np.random.uniform(-0.1, 0.1, size=2)
-
+        '''
         # Set joint positions in simulation
         self.sim.data.set_joint_qpos("obj_slidex", object_pos[0])
         self.sim.data.set_joint_qpos("obj_slidey", object_pos[1])
