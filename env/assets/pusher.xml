@@ -66,32 +66,32 @@
 
     <!--<body name="object" pos="0.55 -0.3 -0.275" >-->
     <body name="object_red" pos="0.0 0.0 -0.275" >
-      <geom rgba="1 1 1 0" type="sphere" size="0.05 0.05 0.05" density="0.00001" conaffinity="1"/>
-      <geom rgba="1 1 1 1" type="cylinder" size="0.05 0.05 0.05" density="0.00001" contype="1" conaffinity="0"/>
-      <joint name="obj_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
-      <joint name="obj_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
+      <geom rgba="1 0 0 1" type="sphere" size="0.05 0.05 0.05" density="0.00001" conaffinity="1"/>
+      <geom rgba="1 0 0 1" type="cylinder" size="0.05 0.05 0.05" density="0.00001" contype="1" conaffinity="0"/>
+      <joint name="object_red_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="object_red_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
     </body>
 
     <body name="object_blue" pos="0.0 0.0  -0.275">
       <!-- Oggetto blu -->
       <geom rgba="0 0 1 1" type="sphere" size="0.05 0.05 0.05" density="0.00001" conaffinity="0"/>
       <geom rgba="0 0 1 1" type="cylinder" size="0.05 0.05 0.05" density="0.00001" contype="1" conaffinity="1"/>
-      <joint name="obj_blue_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
-      <joint name="obj_blue_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="object_blue_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="object_blue_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
     </body>
 
     <body name="object_green" pos="0.0 0.0  -0.275">
       <!-- Oggetto verde -->
       <geom rgba="0 1 0 1" type="sphere" size="0.05 0.05 0.05" density="0.00001" conaffinity="0"/>
       <geom rgba="0 1 0 1" type="cylinder" size="0.05 0.05 0.05" density="0.00001" contype="1" conaffinity="1"/>
-      <joint name="obj_green_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
-      <joint name="obj_green_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="object_green_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="object_green_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
     </body>
 
     <body name="goal_red" pos="0.0 0.0 -0.3230">
       <geom rgba="1 0 0 1" type="cylinder" size="0.08 0.001 0.1" density='0.00001' contype="0" conaffinity="0"/>
-      <joint name="goal_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
-      <joint name="goal_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="goal_red_slidey" type="slide" pos="0 0 0" axis="0 1 0" range="-10.3213 10.3" damping="0.5"/>
+      <joint name="goal_red_slidex" type="slide" pos="0 0 0" axis="1 0 0" range="-10.3213 10.3" damping="0.5"/>
     </body>
 
     <body name="goal_blue" pos="0.0 0.0 -0.3230">
