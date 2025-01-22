@@ -70,17 +70,22 @@ if __name__ == "__main__":
 
 '''
 TRAIN MUJOCO 
- python pusher_rl.py --mode train --timesteps 100000 --model-path my_ppo_pusher --env Pusher-v2
+ python pusher_rl.py --mode train --timesteps 100000 --model-path ***Nome con cui SALVARE il modello*** --env Pusher-v2
 
 TEST MUJOCO
 python pusher_rl.py --mode test --model-path ***Nome Modello da testare*** --episodes 8 --video-dir videos --env Pusher-v2
 
 TRAIN NOSTRO
- python pusher_rl.py --mode train --timesteps 100000 --model-path my_ppo_pusher --env CustomPusher-v0
+ python pusher_rl.py --mode train --timesteps 100000 --model-path ***Nome con cui SALVARE il modello*** --env CustomPusher-v0
 
 TEST NOSTRO
 python pusher_rl.py --mode test --model-path ***Nome Modello da testare*** --episodes 8 --video-dir videos --env CustomPusher-v0
 
 
 ATTENZIONE NEL --model-path NON SERVE SCRIVERE .zip
+
+CONVENZIONE NOME:    def/custom_pusher_PPO/SAC_NUM      def se uso MUJOCO, custom se uso il NOSTRO, PPO/SAC, Numero timesteps TRAIN
+ESEMPIO: def_pusher_PPO_10M
+
+
 '''
