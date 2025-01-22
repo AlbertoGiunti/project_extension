@@ -67,3 +67,10 @@ if __name__ == "__main__":
         train_model(args.env, args.timesteps, args.model_path)
     elif args.mode == "test":
         test_model(args.env, args.model_path, args.episodes, args.video_dir)
+
+'''
+Comando per eseguire quello di mujoco:
+ python pusher_rl.py --mode test --model-path def_pusher_10M --episodes 8 --video-dir videos --env Pusher-v2
+
+
+'''
