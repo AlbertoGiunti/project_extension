@@ -69,8 +69,18 @@ if __name__ == "__main__":
         test_model(args.env, args.model_path, args.episodes, args.video_dir)
 
 '''
-Comando per eseguire quello di mujoco:
- python pusher_rl.py --mode test --model-path def_pusher_10M --episodes 8 --video-dir videos --env Pusher-v2
+TRAIN MUJOCO 
+ python pusher_rl.py --mode train --timesteps 100000 --model-path my_ppo_pusher --env Pusher-v2
+
+TEST MUJOCO
+python pusher_rl.py --mode test --model-path ***Nome Modello da testare*** --episodes 8 --video-dir videos --env Pusher-v2
+
+TRAIN NOSTRO
+ python pusher_rl.py --mode train --timesteps 100000 --model-path my_ppo_pusher --env CustomPusher-v0
+
+TEST NOSTRO
+python pusher_rl.py --mode test --model-path ***Nome Modello da testare*** --episodes 8 --video-dir videos --env CustomPusher-v0
 
 
+ATTENZIONE NEL --model-path NON SERVE SCRIVERE .zip
 '''
