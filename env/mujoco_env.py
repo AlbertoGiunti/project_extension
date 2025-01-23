@@ -37,8 +37,8 @@ class MujocoEnv(gym.Env):
     """Interface for MuJoCo environments.
     """
 
-    def __init__(self, frame_skip):
-
+    def __init__(self, frame_skip, xml_file):
+        self.xml_file = xml_file
         self.frame_skip = frame_skip
         self.build_model()
         self.data = self.sim.data
@@ -62,7 +62,7 @@ class MujocoEnv(gym.Env):
         self.seed()
 
     def build_model(self):
-        self.model = mujoco_py.load_model_from_path(os.path.join(os.path.dirname(__file__), "assets/pusher.xml"))
+        self.model = mujoco_py.load_model_from_path(os.path.join(os.path.dirname(__file__), "assets", self.xml_file))
         self.sim = mujoco_py.MjSim(self.model)
         self.viewer = None
         self._viewers = {}

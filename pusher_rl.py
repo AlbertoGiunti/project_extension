@@ -8,12 +8,17 @@ from env.custom_pusher import *
 
 
 
-
 video_dir = "videos"
 
 # Funzione per il training
 def train_model(env_id, total_timesteps, model_path):
-    env = gym.make(env_id)
+    train_video = os.path.join(video_dir, "train")
+    # Ensure the video directory exists
+    #os.makedirs(train_video, exist_ok=True)
+
+    env = gym.make(env_id, train=True)
+    #env = RecordVideo(env, video_folder=video_dir, episode_trigger=lambda x: True)
+
     model = PPO("MlpPolicy", env, verbose=1)
     model.learn(total_timesteps=total_timesteps)
     model.save(model_path)
@@ -23,11 +28,14 @@ def train_model(env_id, total_timesteps, model_path):
 
 # Funzione per il test con registrazione video
 def test_model(env_id, model_path, n_episodes, video_dir):
+    test_video = os.path.join(video_dir, "test")
     # Assicurati che la directory per i video esista
-    os.makedirs(video_dir, exist_ok=True)
+    os.makedirs(test_video, exist_ok=True)
 
     # Crea l'ambiente senza render_mode
-    env = gym.make(env_id,  render_mode="human")
+
+    env = gym.make(env_id,  render_mode="human", train=False)
+
 
     # Applica il wrapper RecordVideo
     env = RecordVideo(env, video_folder=video_dir, episode_trigger=lambda x: True)
