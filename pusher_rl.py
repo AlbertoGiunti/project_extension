@@ -1,6 +1,6 @@
 import argparse
 import gym
-from stable_baselines3 import SAC
+from stable_baselines3 import SAC, PPO
 from stable_baselines3.common.evaluation import evaluate_policy
 from gym.wrappers import RecordVideo
 import os
@@ -14,7 +14,7 @@ video_dir = "videos"
 # Funzione per il training
 def train_model(env_id, total_timesteps, model_path):
     env = gym.make(env_id)
-    model = SAC("MlpPolicy", env, verbose=1)
+    model = PPO("MlpPolicy", env, verbose=1)
     model.learn(total_timesteps=total_timesteps)
     model.save(model_path)
     print(f"Modello salvato in: {model_path}")
@@ -27,13 +27,13 @@ def test_model(env_id, model_path, n_episodes, video_dir):
     os.makedirs(video_dir, exist_ok=True)
 
     # Crea l'ambiente senza render_mode
-    env = gym.make(env_id)
+    env = gym.make(env_id,  render_mode="human")
 
     # Applica il wrapper RecordVideo
     env = RecordVideo(env, video_folder=video_dir, episode_trigger=lambda x: True)
 
     # Carica il modello PPO
-    model = SAC.load(model_path)
+    model = PPO.load(model_path)
 
     # Valuta il modello
     mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=n_episodes)

@@ -1,7 +1,9 @@
 import numpy as np
 from gym import utils
-import mujoco_py
-from gym.envs.mujoco import MujocoEnv
+import os
+
+from .mujoco_env import MujocoEnv
+from scipy.stats import truncnorm
 from gym import spaces
 from gym.envs.registration import register
 import random
@@ -9,17 +11,7 @@ import random
 
 class CustomPusher(MujocoEnv, utils.EzPickle):
     def __init__(self, render_mode=None):
-        utils.EzPickle.__init__(self)
-        self.current_color = None
-        self.model = mujoco_py.load_model_from_path("env/assets/pusher.xml")
-        self.sim = mujoco_py.MjSim(self.model)
-        self.viewer = None
-        self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(23,), dtype=np.float32)
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(7,), dtype=np.float32)
-
         self.render_mode = render_mode
-        self.frame_skip = 5
-
         self.colors = ["red", "blue", "green"]
         self.color_rgba = {
             "red": np.array([1, 0, 0, 1]),
@@ -39,6 +31,21 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
             "goal_blue": np.array([0.0, 0.3]),
             "goal_green": np.array([-0.6, -0.2])
         }
+        self.current_color = random.choice(self.colors)  # Sceglie un colore a caso per il primo step
+
+
+        '''
+            L'init del MujocoEnv va fatto dopo aver dichiarato gli attributi nuovi
+        '''
+
+        MujocoEnv.__init__(self, frame_skip=5)
+        utils.EzPickle.__init__(self)
+
+
+        self.viewer = None
+        #self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(23,), dtype=np.float32)
+        #self.action_space = spaces.Box(low=-2.0, high=2.0, shape=(7,), dtype=np.float64)
+
 
     def step(self, a):
         current_goal = self.color_goal_map[self.current_color]
@@ -54,14 +61,14 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
 
         self.do_simulation(a, self.frame_skip)
 
-        if self.render_mode == "human":
+        if self.render_mode is "human":
             self.render()
 
         ob = self._get_obs()
         done = False
-        return ob, total_reward, done, {"reward_ctrl": reward_ctrl}
+        return ob, total_reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl)
 
-    def reset(self):
+    def reset_model(self):
         # Randomly select a color
         self.current_color = random.choice(self.colors)
         selected_position = self.object_positions["object"]
@@ -104,6 +111,7 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         self.viewer.cam.trackbodyid = -1
         self.viewer.cam.distance = 4.0
 
+    '''
     def render(self, mode="human"):
         if mode == "human":
             if self.viewer is None:
@@ -113,10 +121,9 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
             return self.sim.render(width=640, height=480, camera_name="track")
         else:
             raise ValueError("Unsupported render mode")
+    '''
 
-    def close(self):
-        if self.viewer is not None:
-            self.viewer = None
+
 
 register(
     id="CustomPusher-v0",
