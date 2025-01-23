@@ -17,10 +17,20 @@ def train_model(env_id, total_timesteps, model_path):
     #os.makedirs(train_video, exist_ok=True)
 
     env = gym.make(env_id, train=True)
-    #env = RecordVideo(env, video_folder=video_dir, episode_trigger=lambda x: True)
-
+    #env = RecordVideo(env, video_folder=train_video, episode_trigger=lambda x: True)
     model = PPO("MlpPolicy", env, verbose=1)
-    model.learn(total_timesteps=total_timesteps)
+
+    if args.render_training is True:
+        obs = env.reset()
+        for _ in range(total_timesteps):
+            action, _ = model.predict(obs)
+            obs, reward, done, info = env.step(action)
+            env.render(mode='human')  # Render the environment
+            if done:
+                obs = env.reset()
+    else:
+        model.learn(total_timesteps=total_timesteps)
+
     model.save(model_path)
     print(f"Modello salvato in: {model_path}")
     env.close()
@@ -38,7 +48,7 @@ def test_model(env_id, model_path, n_episodes, video_dir):
 
 
     # Applica il wrapper RecordVideo
-    env = RecordVideo(env, video_folder=video_dir, episode_trigger=lambda x: True)
+    env = RecordVideo(env, video_folder=test_video, episode_trigger=lambda x: True)
 
     # Carica il modello PPO
     model = PPO.load(model_path)
@@ -69,6 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("--model-path", type=str, default="ppo_pusher", help="Percorso per salvare/caricare il modello")
     parser.add_argument("--episodes", type=int, default=10, help="Numero di episodi per il test")
     parser.add_argument("--video-dir", type=str, default="videos", help="Directory per salvare i video")
+    parser.add_argument("--render-training", type=bool, default=False, choices=[True, False], help="Mostra il render del training o meno")
     args = parser.parse_args()
 
     if args.mode == "train":

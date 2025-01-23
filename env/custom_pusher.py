@@ -109,15 +109,20 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         self.model.body_pos[self.model.body_name2id("object")] = np.array(
             [selected_position[0], selected_position[1], -0.275])
 
-        # Define the reachable area bounds for the goal
-        goal_bounds = {  # Preso i min e i max definiti nelle goal_positions
-            "low": [-0.6, -0.2],
-            "high": [0.6, 0.3]
-        }
+        # Define the center and radius of the semicircle
+        center_x, center_y = selected_position[0], selected_position[1]
+        radius = 0.5
 
-        # Randomly position the goal within the reachable area
-        random_goal_position = np.random.uniform(low=goal_bounds["low"], high=goal_bounds["high"], size=2)
-        self._show_object("goal", random_goal_position)
+        # Randomly select an angle between 0 and π for the semicircle
+        angle = np.random.uniform(0 - np.pi/6, np.pi + np.pi/6)
+
+        # Calculate the goal's position on the semicircle
+        goal_x = center_x + radius * np.cos(angle)
+        goal_y = center_y + radius * np.sin(angle)
+
+        goal_position = [goal_x, goal_y]
+
+        self._show_object("goal", goal_position)
         self.sim.forward()
         return self._get_obs()
 
@@ -163,6 +168,6 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
 register(
     id="CustomPusher-v0",
     entry_point="%s:CustomPusher" % __name__,
-    max_episode_steps=1000,
+    max_episode_steps=5000,
 )
 
