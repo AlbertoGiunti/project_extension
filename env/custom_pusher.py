@@ -29,9 +29,9 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
             "object": np.array([0.0, -0.1])
         }
         self.goal_positions = {
-            "goal_red": np.array([0.6, -0.2]),
-            "goal_blue": np.array([0.0, 0.3]),
-            "goal_green": np.array([-0.6, -0.2])
+            "goal_red": np.array([0.4, -0.2]),
+            "goal_blue": np.array([0.0, 0.2]),
+            "goal_green": np.array([-0.4, -0.2])
         }
         self.current_color = random.choice(self.colors)  # Sceglie un colore a caso per il primo step
 
@@ -50,29 +50,35 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         #self.action_space = spaces.Box(low=-2.0, high=2.0, shape=(7,), dtype=np.float64)
 
     def step(self, a):
-
         if self.train is True:
             current_goal = "goal"
         else:
             current_goal = self.color_goal_map[self.current_color]
 
-        vec_1 = self.sim.data.get_body_xpos("object") - self.sim.data.get_body_xpos("tips_arm")
+
+
+        # Distanze
+        #vec_1 = self.sim.data.get_body_xpos("object") - self.sim.data.get_body_xpos("tips_arm")
         vec_2 = self.sim.data.get_body_xpos("object") - self.sim.data.get_body_xpos(current_goal)
 
-        reward_near = -np.linalg.norm(vec_1)
-        reward_dist = -np.linalg.norm(vec_2)
-        reward_ctrl = -0.1 * np.square(a).sum()
+        # Reward shaping
+        #reward_near = -np.linalg.norm(vec_1)  # Penalità sulla distanza tra "tips_arm" e l'oggetto
+        reward_dist = -np.linalg.norm(vec_2)  # Penalità sulla distanza tra l'oggetto e il goal
+        #reward_ctrl = -0.1 * np.square(a).sum()  # Penalità per azioni troppo forti
+        reward_goal = 10 if np.linalg.norm(vec_2) < 0.005 else 0  # Bonus se il goal è raggiunto
 
-        total_reward = reward_dist + 0.5 * reward_near + reward_ctrl
+        # Totale
+        total_reward = reward_dist + reward_goal   #+0.5 * reward_near  #+ reward_ctrl
 
+        # Simulazione
         self.do_simulation(a, self.frame_skip)
 
-        if self.render_mode is "human":
+        if self.render_mode == "human":
             self.render()
 
         ob = self._get_obs()
-        done = False
-        return ob, total_reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl)
+        #done = reward_goal > 0  # Episodio termina quando il goal è raggiunto
+        return ob, total_reward, False, dict(reward_dist=reward_dist, reward_goal=reward_goal) #reward_ctrl=reward_ctrl )
 
     def reset_model(self):
         if self.train is True:
@@ -114,7 +120,7 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         radius = 0.5
 
         # Randomly select an angle between 0 and π for the semicircle
-        angle = np.random.uniform(0 - np.pi/6, np.pi + np.pi/6)
+        angle = np.random.uniform(0 - np.pi / 6, np.pi + np.pi / 6)
 
         # Calculate the goal's position on the semicircle
         goal_x = center_x + radius * np.cos(angle)
@@ -131,12 +137,12 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
         self.model.body_pos[body_id] = np.array([position[0], position[1], -0.3230])
 
     def _get_obs(self):
-        #Mappa il goal in base al colore
         if self.train is True:
             current_goal = "goal"
         else:
             current_goal = self.color_goal_map[self.current_color]
-        return np.concatenate(
+
+        obs = np.concatenate(
             [
                 self.sim.data.qpos.flat[:7],
                 self.sim.data.qvel.flat[:7],
@@ -145,6 +151,11 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
                 self.sim.data.get_body_xpos(current_goal),
             ]
         )
+
+        # Normalizzazione
+        obs_mean = np.array([0.0] * len(obs))
+        obs_std = np.array([1.0] * len(obs))
+        return (obs - obs_mean) / (obs_std + 1e-8)
 
     def viewer_setup(self):
         assert self.viewer is not None
@@ -168,6 +179,6 @@ class CustomPusher(MujocoEnv, utils.EzPickle):
 register(
     id="CustomPusher-v0",
     entry_point="%s:CustomPusher" % __name__,
-    max_episode_steps=5000,
+    max_episode_steps=1000,
 )
 
