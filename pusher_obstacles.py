@@ -1,6 +1,7 @@
 import os
 import gym
 import argparse
+import numpy as np
 import matplotlib.pyplot as plt
 from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import EvalCallback
@@ -9,6 +10,47 @@ from gym.wrappers import RecordVideo
 from env import pusher_v4
 
 video_dir = "videos"
+
+
+def moving_average(values, window):
+    """
+    Smooth values by doing a moving average
+    :param values: (numpy array)
+    :param window: (int)
+    :return: (numpy array)
+    """
+    weights = np.repeat(1.0, window) / window
+    return np.convolve(values, weights, "valid")
+
+def plot_rewards(data, plot_dir):
+    """
+    Generates a plot of episodic rewards and saves it to the specified directory.
+    """
+    timesteps = data['timesteps']
+    rewards = data['results']
+
+    # Calculate the mean reward for each timestep across the episodes
+    mean_rewards_per_timestep = rewards.mean(axis=1)
+
+    # Calculate the moving average of the mean rewards with a window size of 50
+    window_size = 50
+    mean_rewards = moving_average(mean_rewards_per_timestep, window_size)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(timesteps, mean_rewards_per_timestep, label="Reward per timestep", color="green", alpha=0.5)
+    plt.plot(timesteps[window_size-1:], mean_rewards, label="Mean reward", color='blue')
+    plt.xlabel("Number of timesteps")
+    plt.ylabel("Reward")
+    plt.title("Reward during training")
+    plt.legend()
+    plt.grid()
+
+    os.makedirs(plot_dir, exist_ok=True)
+    plot_path = os.path.join(plot_dir, "rewards_plot.png")
+    plt.savefig(plot_path)
+    plt.show()
+    print(f"Reward plot saved in {plot_path}")
+
 
 # Function for training
 def train_model(env_id, total_timesteps, model_path, render_training=False):
@@ -40,16 +82,14 @@ def train_model(env_id, total_timesteps, model_path, render_training=False):
     )
 
     # Callback for periodic evaluation
-    eval_callback = EvalCallback(
+    reward_logger = EvalCallback(
         eval_env,
         best_model_save_path="./logs/",
         log_path="./logs/",
-        eval_freq=20,
+        eval_freq=100,
         deterministic=True,
     )
 
-    rewards = []
-    mean_rewards = []
 
     obs = env.reset()
     if render_training:
@@ -57,8 +97,6 @@ def train_model(env_id, total_timesteps, model_path, render_training=False):
         for _ in range(total_timesteps):
             action, _ = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            rewards.append(reward)
-            mean_rewards.append(sum(rewards) / len(rewards))
             env.render(mode='human')  # Render the environment
             if done:
                 obs = env.reset()
@@ -66,25 +104,22 @@ def train_model(env_id, total_timesteps, model_path, render_training=False):
         for _ in range(total_timesteps):
             action, _ = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            rewards.append(reward)
-            mean_rewards.append(sum(rewards) / len(rewards))
             if done:
                 obs = env.reset()
-        model.learn(total_timesteps=total_timesteps, callback=eval_callback)
+        model.learn(total_timesteps=total_timesteps, callback=reward_logger)
 
+    # Save the model
     model.save(model_path)
     print(f"Model saved at: {model_path}")
     env.close()
 
-    # Plot rewards
-    plt.figure(figsize=(12, 6))
-    plt.plot(rewards, label='Reward')
-    plt.plot(mean_rewards, label='Mean Reward')
-    plt.xlabel('Timesteps')
-    plt.ylabel('Reward')
-    plt.legend()
-    plt.title('Training Rewards')
-    plt.savefig("plots/rewards.png")
+    # Salva i log
+    if reward_logger.evaluations_results is not None:
+        evals = reward_logger.evaluations_results
+        timesteps = reward_logger.evaluations_timesteps
+        np.savez(os.path.join("logs", "evaluations.npz"), timesteps=timesteps, results=evals)
+
+    # Plot the rewards
 
 # Function for testing
 def test_model(env_id, model_path, n_episodes, video_dir):
@@ -128,6 +163,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == "train":
+        evaluation_file = os.path.join("logs", "evaluations.npz")
         train_model(args.env, args.timesteps, args.model_path, args.render_training)
+        if os.path.exists(evaluation_file):
+            data = np.load(evaluation_file)
+            plot_rewards(data, "plots")
     elif args.mode == "test":
         test_model(args.env, args.model_path, args.episodes, args.video_dir)
