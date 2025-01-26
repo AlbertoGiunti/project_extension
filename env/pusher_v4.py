@@ -163,7 +163,7 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
         reward = reward_dist + 0.1 * reward_ctrl + 0.5 * reward_near
 
         reward_obstacle = 0
-        for obstacle in ["obstacle1_geom", "obstacle2_geom"]:
+        for obstacle in ["obstacle1_geom", "obstacle2_geom", "obstacle3_geom"]:
             if self._check_contact("object", obstacle):
                 reward_obstacle -= 0.2  # Adjusted penalty
 
