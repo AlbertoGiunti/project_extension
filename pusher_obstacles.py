@@ -121,7 +121,7 @@ def train_model(env_id, total_timesteps, model_path, render_training=False):
     # Plot the rewards
 
 # Function for testing
-def test_model(env_id, model_path, n_episodes, video_dir):
+def test_model(env_id, model_path, n_episodes, video_dir, render_test=False):
     test_video = os.path.join(video_dir, "test")
     # Ensure the video directory exists
     os.makedirs(test_video, exist_ok=True)
@@ -130,7 +130,7 @@ def test_model(env_id, model_path, n_episodes, video_dir):
     env = gym.make(env_id, render_mode="rgb_array", train=False, object_random=args.object_random)
 
     # Apply the RecordVideo wrapper
-    env = RecordVideo(env, video_folder=test_video, episode_trigger=lambda x: True)
+    #env = RecordVideo(env, video_folder=test_video, episode_trigger=lambda x: True)
 
     # Load the SAC model
     model = SAC.load(model_path)
@@ -142,9 +142,14 @@ def test_model(env_id, model_path, n_episodes, video_dir):
         while not done:
             action, _ = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            env.render()  # Render the environment
+            #env.render()  # Render the environment
+            if render_test:
+                env.render()  # Render the environment
             if done:
                 obs = env.reset()
+
+    mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=n_episodes, render=True)
+    print(f"Mean Reward: {mean_reward}, Std Reward: {std_reward}")
 
     env.close()
     print(f"Video saved in: {test_video}")
@@ -158,8 +163,9 @@ if __name__ == "__main__":
     parser.add_argument("--episodes", type=int, default=10, help="Numero di episodi per il test")
     parser.add_argument("--model-path", type=str, default="sac_pusher_OSTACOLI", help="Path to save the model")
     parser.add_argument("--render-training", action='store_true', help="Render the training process")
+    parser.add_argument("--render-test", action='store_true', help="Render the test process")
     parser.add_argument("--video-dir", type=str, default="videos", help="Directory to save videos")
-    parser.add_argument("--object-random",action='store_true', help="Random object position")
+    parser.add_argument("--object-random", action='store_true', help="Random object position")
     args = parser.parse_args()
 
     if args.mode == "train":
@@ -169,7 +175,7 @@ if __name__ == "__main__":
             data = np.load(evaluation_file)
             plot_rewards(data, "plots")
     elif args.mode == "test":
-        test_model(args.env, args.model_path, args.episodes, args.video_dir)
+        test_model(args.env, args.model_path, args.episodes, args.video_dir, args.render_test)
 
 
 '''
