@@ -170,3 +170,12 @@ if __name__ == "__main__":
             plot_rewards(data, "plots")
     elif args.mode == "test":
         test_model(args.env, args.model_path, args.episodes, args.video_dir)
+
+
+'''
+TRAIN
+python pusher_obstacles.py --mode train --env Pusher-v4 --timesteps 500000 --model-path sac_pusher_Obs3_random_500k --object-random 
+
+TEST
+ python pusher_obstacles.py --mode test --env Pusher-v4 --model-path sac_pusher_Obs3_random_500k --episodes 10 --video-dir videos --object-random
+'''
