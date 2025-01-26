@@ -138,10 +138,12 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
         "render_fps": 20,
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, object_random=False, **kwargs):
         utils.EzPickle.__init__(self, **kwargs)
         self.render_mode = kwargs.get("render_mode", None)
         observation_space = Box(low=-np.inf, high=np.inf, shape=(23,), dtype=np.float64)
+
+        self.object_random = object_random
 
         xml_file = "env/assets/pusher.xml"
         absolute_path = os.path.abspath(xml_file)
@@ -199,6 +201,9 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
             if np.linalg.norm(self.cylinder_pos - self.goal_pos) > 0.17:
                 break
 
+        if self.object_random is True:
+            self.set_random_obstacles_pos()
+
         qpos[-4:-2] = self.cylinder_pos
         qpos[-2:] = self.goal_pos
         qvel = self.init_qvel + self.np_random.uniform(
@@ -207,6 +212,38 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
         qvel[-4:] = 0
         self.set_state(qpos, qvel)
         return self._get_obs()
+
+    def set_random_obstacles_pos(self):
+        goal_y = self.goal_pos[1]
+        object_y = self.cylinder_pos[1]
+        min_y = min(goal_y, object_y)
+        max_y = max(goal_y, object_y)
+        min_x = -0.15
+        max_x = 0.7
+        r = 0.2  # Minimum distance between obstacles
+
+        def is_valid_position(pos, existing_positions):
+            for existing_pos in existing_positions:
+                if np.linalg.norm(pos - existing_pos) < r:
+                    return False
+            return True
+
+        self.obstacle1_pos = self.np_random.uniform(low=[min_x, min_y], high=[max_x, max_y], size=2)
+        self.obstacle2_pos = self.np_random.uniform(low=[min_x, min_y], high=[max_x, max_y], size=2)
+        self.obstacle3_pos = self.np_random.uniform(low=[min_x, min_y], high=[max_x, max_y], size=2)
+
+        existing_positions = [self.obstacle1_pos]
+        while not is_valid_position(self.obstacle2_pos, existing_positions):
+            self.obstacle2_pos = self.np_random.uniform(low=[min_x, min_y], high=[max_x, max_y], size=2)
+        existing_positions.append(self.obstacle2_pos)
+        while not is_valid_position(self.obstacle3_pos, existing_positions):
+            self.obstacle3_pos = self.np_random.uniform(low=[min_x, min_y], high=[max_x, max_y], size=2)
+
+        # Set the positions of the obstacles
+        self.model.body_pos[self.model.body_name2id('obstacle1')][:2] = self.obstacle1_pos
+        self.model.body_pos[self.model.body_name2id('obstacle2')][:2] = self.obstacle2_pos
+        self.model.body_pos[self.model.body_name2id('obstacle3')][:2] = self.obstacle3_pos
+
 
     def _get_obs(self):
         return np.concatenate(

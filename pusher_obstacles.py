@@ -60,9 +60,8 @@ def train_model(env_id, total_timesteps, model_path, render_training=False):
     # Ensure the plot directory exists
     os.makedirs("plots", exist_ok=True)
 
-
-    env = gym.make(env_id)
-    eval_env = gym.make(env_id)  # Environment for evaluation
+    env = gym.make(env_id, object_random=args.object_random)  # Environment for training
+    eval_env = gym.make(env_id, object_random=args.object_random)  # Environment for evaluation
 
     # Configure the SAC model with optimized hyperparameters
     model = SAC(
@@ -128,7 +127,7 @@ def test_model(env_id, model_path, n_episodes, video_dir):
     os.makedirs(test_video, exist_ok=True)
 
     # Create the environment with render_mode="rgb_array"
-    env = gym.make(env_id, render_mode="rgb_array", train=False)
+    env = gym.make(env_id, render_mode="rgb_array", train=False, object_random=args.object_random)
 
     # Apply the RecordVideo wrapper
     env = RecordVideo(env, video_folder=test_video, episode_trigger=lambda x: True)
@@ -160,6 +159,7 @@ if __name__ == "__main__":
     parser.add_argument("--model-path", type=str, default="sac_pusher_OSTACOLI", help="Path to save the model")
     parser.add_argument("--render-training", action='store_true', help="Render the training process")
     parser.add_argument("--video-dir", type=str, default="videos", help="Directory to save videos")
+    parser.add_argument("--object-random",action='store_true', help="Random object position")
     args = parser.parse_args()
 
     if args.mode == "train":
