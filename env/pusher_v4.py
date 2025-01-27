@@ -138,12 +138,13 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
         "render_fps": 20,
     }
 
-    def __init__(self, object_random=False, **kwargs):
+    def __init__(self, obstacle_random=False, udr=False, **kwargs):
         utils.EzPickle.__init__(self, **kwargs)
         self.render_mode = kwargs.get("render_mode", None)
         observation_space = Box(low=-np.inf, high=np.inf, shape=(23,), dtype=np.float64)
 
-        self.object_random = object_random
+        self.obstacle_random = obstacle_random
+        self.udr = udr
 
         xml_file = "env/assets/pusher.xml"
         absolute_path = os.path.abspath(xml_file)
@@ -201,7 +202,11 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
             if np.linalg.norm(self.cylinder_pos - self.goal_pos) > 0.17:
                 break
 
-        if self.object_random is True:
+        if self.udr is True:
+            self.sample_parameters()
+
+        # Randomizzazione posizione oggetti
+        if self.obstacle_random is True:
             self.set_random_obstacles_pos()
 
         qpos[-4:-2] = self.cylinder_pos
@@ -244,6 +249,20 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
         self.model.body_pos[self.model.body_name2id('obstacle2')][:2] = self.obstacle2_pos
         self.model.body_pos[self.model.body_name2id('obstacle3')][:2] = self.obstacle3_pos
 
+    def sample_parameters(self):
+        """
+           Apply UDR to the weight of the forearm.
+           """
+        # Define the randomization range for the forearm weight
+        min_weight = 3      # Minimum weight 10^-2
+        max_weight = 30000  # Maximum weight 10^2
+
+        # Sample a new weight for the forearm
+        new_weight = self.np_random.uniform(low=min_weight, high=max_weight)
+
+        # Apply the new weight to the forearm
+        self.model.body_mass[self.model.body_name2id('r_forearm_link')] = new_weight
+        return
 
     def _get_obs(self):
         return np.concatenate(
