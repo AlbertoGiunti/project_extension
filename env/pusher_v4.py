@@ -191,7 +191,11 @@ class PusherEnv(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         qpos = self.init_qpos
 
-        self.goal_pos = np.asarray([0, 0])
+        # self.goal_pos = np.asarray([0, 0])
+        self.goal_pos = np.asarray([
+            self.np_random.uniform(low=-0.05, high=0.05),  # Limited x variation
+            self.np_random.uniform(low=-0.1, high=0.1)   # Limited y variation
+        ])
         while True:
             self.cylinder_pos = np.concatenate(
                 [
